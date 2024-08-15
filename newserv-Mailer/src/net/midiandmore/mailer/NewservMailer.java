@@ -5,10 +5,24 @@
 package net.midiandmore.mailer;
 
 import jakarta.mail.MessagingException;
+import java.nio.charset.Charset;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import org.apache.commons.codec.binary.Hex;
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.codec.digest.HmacAlgorithms.HMAC_MD5;
 import static org.apache.commons.codec.digest.HmacAlgorithms.HMAC_SHA_256;
 import org.apache.commons.codec.digest.HmacUtils;
@@ -60,10 +74,68 @@ public class NewservMailer {
         }
     }
 
+    private String generateUrl(String[] obj) {
+        var r = String.valueOf(new Random(4).nextInt()).getBytes();
+        var uid = Integer.parseInt(obj[0]);
+        var uname = obj[1];
+        var password = obj[11];
+        var key = getConfig().getConfigFile().getProperty("urlkey");
+        MessageDigest messageDigest = null;
+        try {
+            messageDigest = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(NewservMailer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        messageDigest.reset();
+        messageDigest.update("%s %s".formatted(r, key).getBytes(Charset.forName("UTF8")));
+        var resultByte = messageDigest.digest();
+        var a = new String(Hex.encodeHex(resultByte));
+        try {
+            a = new Hex(RC4(a, password)).toString();
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException ex) {
+            Logger.getLogger(NewservMailer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        messageDigest.reset();
+        messageDigest.update("%s %s %s %s".formatted(getConfig().getConfigFile().getProperty("urlsecret"), uname, a, r).getBytes(Charset.forName("UTF8")));
+        resultByte = messageDigest.digest();
+        var b = new String(Hex.encodeHex(resultByte));
+        return "%s?m=%s&h=%s&u=%s&r=%s".formatted(getConfig().getConfigFile().getProperty("url"), a, b, uname, new String(Hex.encodeHex(r)));
+    }
+
+    private String generateActivationUrl(String[] obj) {
+        var r = Hex.encodeHexString(String.valueOf(new Random(16).nextInt()).getBytes());
+        var uid = Integer.parseInt(obj[0]);
+        var uname = obj[1];
+        var password = obj[11];
+        var key = getConfig().getConfigFile().getProperty("activationkey");
+        String a = null;
+        var hex = sha256Hex("%s %s %s".formatted(r, key, password));
+        try {
+            a = new String(Hex.encodeHexString(RC4(hex, new String(Hex.encodeHexString(password.getBytes()))).getBytes()));
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException ex) {
+            Logger.getLogger(NewservMailer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        var hd = new HmacUtils(HMAC_SHA_256, "%s %s".formatted(r, key))
+                .hmacHex("%d %s %s".formatted(uid, uname, a));
+        return "%s?id=%d&h=%s&r=%s&u=%s&p=%s".formatted(getConfig().getConfigFile().getProperty("activationurl"), uid, hd, r, Hex.encodeHexString(uname.getBytes()), a);
+    }
+
+    private String RC4(String text, String part2) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+        byte[] testDataBytes = text.getBytes();
+        KeyGenerator rc4KeyGenerator = KeyGenerator.getInstance("RC4");
+        SecretKey key = rc4KeyGenerator.generateKey();
+        // Create Cipher instance and initialize it to encrytion mode
+        Cipher cipher = Cipher.getInstance("RC4");  // Transformation of the algorithm
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        cipher.update(part2.getBytes());
+        byte[] cipherBytes = cipher.doFinal(testDataBytes);
+        return new String(cipherBytes);
+    }
+
     private void email(String userid, String emailtype, String prevemail) {
         var one = getDb().getData(userid);
-        for (var i = 0; i < one.length; i++) {
-            if (one[i] == null) {
+        for (String one1 : one) {
+            if (one1 == null) {
                 return;
             }
         }
@@ -90,7 +162,8 @@ public class NewservMailer {
             arr[1] = "never";
             arr[2] = "";
         } else {
-            arr[1] = new HmacUtils(HMAC_SHA_256, obj[1]).hmacHex(obj[10]);
+            arr[1] = new HmacUtils(HMAC_SHA_256, "%s:codegenerator".formatted(getConfig().getConfigFile().getProperty("q9secret")))
+                    .hmacHex("%s:%s".formatted(obj[1], obj[10]));
             arr[0] = new Date(Long.parseLong(obj[10]) * 1000).toString();
             arr[2] = "/MSG %(config.bot)s RESET #%(user.username)s %(resetcode)s";
         }
@@ -99,9 +172,12 @@ public class NewservMailer {
 
     private String parseTemplate(String content, String[] one, String prevemail) {
         var code = generateResetcode(one);
+        var url = generateActivationUrl(one);
+        content = content.replace("%(url)s", url);
         content = content.replace("%(resetline)s", code[2]);
         content = content.replace("%(resetcode)s", code[1]);
         content = content.replace("%(lockuntil)s", code[0]);
+        content = content.replace("%(config.cleanup)d", getConfig().getConfigFile().getProperty("cleanup"));
         content = content.replace("%(config.bot)s", getConfig().getConfigFile().getProperty("bot"));
         content = content.replace("%(user.email)s", one[12]);
         content = content.replace("%(user.username)s", one[1]);
