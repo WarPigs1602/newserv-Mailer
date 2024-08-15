@@ -1,0 +1,20 @@
+[
+{"name":"database","value":"newserv","description":"database name"},
+{"name":"user","value":"user","description":"database name","description":"database user"},
+{"name":"password","value":"password","description":"database password"},
+{"name":"host","value":"localhost","description":"database host"},
+{"name":"bot","value":"Q"},
+{"name":"cleanup","value":"80"},
+{"name":"securityurl","value":"http://www.quakenet.org/faq/faq.php?c=160"},
+{"name":"siteurl","value":"http://www.quakenet.org/"},
+{"name":"server","value":"CServe.test.quakenet.org"},
+{"name":"network","value":"QuakeNet"},
+{"name":"defaultlang","value":"en"},
+{"name":"url","value":"http://webdev.quakenet.org/~slug/q9dev/"},
+{"name":"urlkey","value":"keyere"},
+{"name":"urlsecret","value":"secretere"},
+{"name":"ssl","value":"false"},
+{"name":"activationurl","value":"http://webdev.quakenet.org/~slug/q9dev/activate/"},
+{"name":"activationkey","value":"123"},
+{"name":"q9secret","value":"moo"}
+]

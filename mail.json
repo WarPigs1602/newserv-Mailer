@@ -1,0 +1,12 @@
+[
+{"name":"from-mail-address","value":"mail@example.com"},
+{"name":"mail.smtp.auth","value":"true"},
+{"name":"mail.smtp.host","value":"smtp.example.com"},
+{"name":"mail.smtp.port","value":"465"},
+{"name":"mail.smtp.socketFactory.class","value":"javax.net.ssl.SSLSocketFactory"},
+{"name":"mail.smtp.socketFactory.port","value":"465"},
+{"name":"mail.smtp.starttls.enable","value":"true"},
+{"name":"password","value":"password"},
+{"name":"use_auth","value":"true"},
+{"name":"username","value":"username"}
+]

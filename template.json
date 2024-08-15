@@ -1,0 +1,31 @@
+[
+{
+"id":"1",
+"subject":"%(config.bot)s account registration",
+"body":"Dear %(user.username)s.\n\nThank you for registering.\nYour password is %(user.password)s\n\nNote that this URL will not work forever, you should make a note of your password\nor change it (as on the site).\n\nIn case you forget your login/password use:\n/msg %(config.bot)s REQUESTPASSWORD %(user.email)s\n\nMake sure you've read the %(config.bot)s FAQ at %(config.siteurl)s for a complete\nreference on %(config.bot)s's commands and usage.\n\n ** PLEASE READ %(config.securityurl)s --\n    it contains important information about keeping your account secure.\n    Note that %(network.name)s Operators will not intervene if you fail to read\n    the above URL and your account is compromised as a result.\n\nPLEASE REMEMBER THAT UNUSED ACCOUNTS ARE AUTOMATICALLY REMOVED\nAFTER %(config.cleanup)d DAYS, AND ALL CHANLEVS ARE LOST!\n\nNB: Save this email for future reference.\n"},
+{
+"id":"2",
+"subject":"%(config.bot)s password request", 
+"body":"Your username/password is:\n\nUsername: %(user.username)s\nPassword: %(user.password)s\n\nTo auth yourself to %(config.bot)s, type the following command\n\n   /MSG %(config.bot)s@%(config.server)s AUTH %(user.username)s %(user.password)s\n"
+},
+{
+"id":"3",
+"subject":"%(config.bot)s password change", 
+"body":"Your password has recently changed. If this was not requested by you,\nplease use:\n%(resetline)s\n\nYou have until %(lockuntil)s to perform this command.\n"
+},
+{
+"id":"4",
+"subject":"%(config.bot)s account reset",
+"body":"Your %(config.bot)s account settings have been restored:\n  E-mail address: %(user.email)s\n  Password:       %(user.password)s\n\nMake sure you read the %(config.bot)s security FAQ at %(config.securityurl)s.\n"
+},
+{
+"id":"5",
+"subject":"%(config.bot)s email change",
+"body":"Your email address has been changed on %(config.bot)s from %(prevemail)s to %(user.email)s.\n\nIf you did not request this please use:\n%(resetline)s\n\nYou have until %(lockuntil)s to perform this command.\n"
+},
+{
+"id":"6", 
+"subject":"Please complete your %(network.name)s account registration", 
+"body":"Hi %(user.username)s,\n\nYou're just one click away from completing your registration for a %(network.name)s account!\n\nJust visit the link below to complete the process:\n%(url)s\n\nFor reference, your username/password is:\n\nUsername: %(user.username)s\nPassword: %(user.password)s\n\nAfter activation you can auth yourself to %(network.name)s by typing the following command:\n\n   /AUTH %(user.username)s %(user.password)s\n"
+}
+]

@@ -1,0 +1,21 @@
+[Unit]
+Description=newserv java mailer
+# changeme
+After=network.target postgresql@16-main.service
+
+[Service]
+Type=simple
+# changeme
+WorkingDirectory=/home/chat/mailer
+# changeme
+ExecStart=java -jar /home/chat/mailer/newserv-Mailer.jar
+# changeme
+User=chat
+# changeme
+Group=chat
+
+Restart=on-failure
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target
